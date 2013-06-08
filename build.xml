@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<project name="MagentoTarToConnect" default="hello">
+
+    <target name="hello">
+        <exec command="echo 'Hi!  Why are you executing phing without looking at targets in build.xml?'" />
+    </target>
+    
+    <fileset dir="." id="root_folder">
+        <include name="magento-tar-to-connect.php" />
+    </fileset>
+    <fileset dir="vendor" id="vendor_folder">
+        <include name="magento/downloader/lib/Mage/Archive/Abstract.php" />
+        <include name="magento/downloader/lib/Mage/Archive/Helper" />
+        <include name="magento/downloader/lib/Mage/Archive/Helper/File.php" />
+        <include name="magento/downloader/lib/Mage/Archive/Interface.php" />
+        <include name="magento/downloader/lib/Mage/Archive/Tar.php" />
+        <include name="magento/downloader/lib/Mage/Exception.php" />
+    </fileset>
+
+    <target name="create_phar">
+        <pharpackage basedir="./" stub="_cli_stub.php" signature="sha512" compression="none" destfile="./magento-tar-to-connect.phar">
+            <metadata>
+                <element name="version" value="1.0.0" />
+                <element name="authors">
+                    <element name="Alan Storm">
+                        <element name="e-mail" value="google-me@example.com" />
+                    </element>
+                </element>
+            </metadata>
+            <fileset refid="root_folder" />
+            <fileset refid="vendor_folder" />
+        </pharpackage>
+
+        <!-- make phar executable -->
+        <exec command="git config core.filemode true" />
+        <exec command="git update-index --chmod=+x magento-tar-to-connect.phar" />
+        <chmod file="./magento-tar-to-connect.phar" mode="775" />
+    </target>
+</project>
