@@ -7,7 +7,7 @@ A small shell script to automatically package tar archives into Magento's Connec
 
 Under the hood Magento Connect 2.0 packages are actually tar'ed and gziped files with a specially formatted package manifest.  Well, they're almost `tar` and `gzip` files.  Magento implemented their own archiving and unarchiving code in PHP, and this code occasionally has problems with tar archives created via standard OS tools. 
 
-This shell script will take a standard tar archive, untar it, build the Connect `package.xml` manifest, and then re-tar and gzip the files **using Magento's code** (included in the `vendor` library here, but you can substitute your own).  This decreases the likelyhood yoru package will be incompatible with Magento Connect. 
+This shell script will take a standard tar archive, untar it, build the Connect `package.xml` manifest, and then re-tar and gzip the files **using Magento's code** (included in the `vendor` library here, but you can substitute your own).  This decreases the likelihood your package will be incompatible with Magento Connect. 
 
 ## Usage
 
@@ -21,7 +21,7 @@ Where `example-config.php` is a PHP file which returns a set of configuration ke
     return array(
     
     //The base_dir and archive_file path are combined to point to your tar archive
-    //The basic idea is a seperate process builds the tar file, then this finds it
+    //The basic idea is a separate process builds the tar file, then this finds it
     'base_dir'               => '/fakehome/Documents/github/Pulsestorm/var/build',
     'archive_files'          => 'Pulstorm_Example.tar',
     
@@ -49,7 +49,7 @@ Where `example-config.php` is a PHP file which returns a set of configuration ke
     'channel'                => 'community',
     
     //Magento Connect information fields.
-    'summary'                => 'Provides navigation shortcuts for the admin console\'s navigation and gloal search',
+    'summary'                => 'Provides navigation shortcuts for the admin console\'s navigation and global search',
     'description'            => 'This extension provides Magento admin console users with an "application launcher". This application launcher provides instant access to the admin console\'s navigation, every system configuration search section, as well as the Magento global search.  The Pulse Storm launcher is a free, open source, must have extension for anyone working with Magento. ',
     'notes'                  => 'Typo fixes, properly aborts ajax requests.',
     
@@ -65,3 +65,11 @@ Where `example-config.php` is a PHP file which returns a set of configuration ke
     'php_min'                => '5.2.0',
     'php_max'                => '6.0.0'
     );
+
+## Building a `phar` with Phing
+
+The project also includes a `phing` build.xml file.  This may be used to create an executable `phar` of the script, allow for easy usage.  To build the phar, simply run
+
+    $ phing create_phar
+    
+    
