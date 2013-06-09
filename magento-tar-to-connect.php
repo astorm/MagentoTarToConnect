@@ -1,4 +1,3 @@
-#!/usr/bin/env php
 <?php
 // Copyright (c) 2012 Pulsestorm LLC.
 // 
@@ -162,7 +161,7 @@ function load_config($config_name=false)
     }
     if(!file_exists($config_name))
     {
-        error("Could not find $config_name");
+        error("Could not find $config_name.  Create this file, or pass in an alternate");
     }
     $config = include $config_name;
     $config = validate_config($config);
