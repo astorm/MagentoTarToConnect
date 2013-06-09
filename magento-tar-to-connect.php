@@ -235,6 +235,10 @@ function main($argv)
     $archive_connect    = $config['extension_name'] . '-' . $config['extension_version'] . '.tgz';
     
     $temp_dir   = get_temp_dir();        
+    if($base_dir['0'] !== '/')
+    {
+        $base_dir = getcwd() . '/' . $base_dir;
+    }
     chdir($temp_dir);
     shell_exec('cp '        . $base_dir . '/' . $archive_files . ' ' . $temp_dir);
     if(preg_match('/\.zip$/', $archive_files)) {
