@@ -101,8 +101,24 @@ function create_package_xml($files, $base_dir, $config)
     $php                = $required->addChild('php');
     $php->min           = $config['php_min'];   //'5.2.0';
     $php->max           = $config['php_max'];   //'6.0.0';
-    
-    $node = $xml->addChild('contents');		
+
+    // add php extension dependencies
+    if (is_array($config['extensions'])) {
+        foreach ($config['extensions'] as $extinfo) {
+            $extension = $required->addChild('extension');
+            if (is_array($extinfo)) {
+                $extension->name = $extinfo['name'];
+                $extension->min = isset($extinfo['min']) ? $extinfo['min'] : "";
+                $extension->max = isset($extinfo['max']) ? $extinfo['max'] : "";
+            } else {
+                $extension->name = $extinfo;
+                $extension->min = "";
+                $extension->max = "";
+            }
+        }
+    }
+
+    $node = $xml->addChild('contents');
     $node = $node->addChild('target');
     $node->addAttribute('name', 'mage');
     
