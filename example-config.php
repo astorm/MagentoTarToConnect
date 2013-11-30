@@ -44,5 +44,14 @@ return array(
 //PHP min/max fields for Connect.  I don't know if anyone uses these, but you should
 //probably check that they're accurate
 'php_min'                => '5.2.0',
-'php_max'                => '6.0.0'
+'php_max'                => '6.0.0',
+
+//PHP extension dependencies. An array containing one or more of either:
+//  - a single string (the name of the extension dependency); use this if the
+//    extension version does not matter
+//  - an associative array with 'name', 'min', and 'max' keys which correspond
+//    to the extension's name and min/max required versions
+//Example:
+//    array('json', array('name' => 'mongo', 'min' => '1.3.0', 'max' => '1.4.0'))
+'extensions'             => array()
 );
