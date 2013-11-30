@@ -239,6 +239,11 @@ function main($argv)
         $base_dir = getcwd() . '/' . $base_dir;
     }
     chdir($temp_dir);
+    if(!file_Exists($base_dir . '/' . $archive_files))
+    {
+        error('Can\'t find specified archive, bailing' . "\n[" . $base_dir . '/' . $archive_files.']');
+        exit;
+    }
     shell_exec('cp '        . $base_dir . '/' . $archive_files . ' ' . $temp_dir);
     if(preg_match('/\.zip$/', $archive_files)) {
         shell_exec('unzip -o '  . $temp_dir . '/' . $archive_files);
