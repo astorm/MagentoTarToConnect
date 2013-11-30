@@ -255,7 +255,7 @@ function main($argv)
         $base_dir = getcwd() . '/' . $base_dir;
     }
     chdir($temp_dir);
-    if(!file_Exists($base_dir . '/' . $archive_files))
+    if(!file_exists($base_dir . '/' . $archive_files))
     {
         error('Can\'t find specified archive, bailing' . "\n[" . $base_dir . '/' . $archive_files.']');
         exit;
