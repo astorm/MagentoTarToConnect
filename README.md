@@ -36,6 +36,10 @@ Where `example-config.php` is a PHP file which returns a set of configuration ke
     'extension_version'      => '1.0.3',
     'skip_version_compare'   => false,
     
+    //You can also have the package script use the version in the module you 
+    //are packaging with. 
+    'auto_detect_version'   => false,
+    
     //Where on your local system you'd like to build the files to
     'path_output'            => '/fakehome/Pulsestorm/var/build-connect',
     
