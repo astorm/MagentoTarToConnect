@@ -201,6 +201,7 @@ function get_module_version($files)
         $version_strings = $xml->xpath('//version');
         foreach($version_strings as $version)
         {
+            $version = (string) $version;
             if(!empty($version)) 
             {
                 return (string)$version;
