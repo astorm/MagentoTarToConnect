@@ -287,6 +287,8 @@ function main($argv)
     $xml        = create_package_xml($files,$temp_dir,$config);
     
     file_put_contents($temp_dir . '/package.xml',$xml);    
+    // Creating extension xml for connect using the extension name
+    createExtension($files, $config, $temp_dir);
     echo $temp_dir,"\n";
     
     if(!is_dir($path_output))
@@ -302,5 +304,94 @@ function main($argv)
     #echo $xml;
     #echo "\nDone\n";
     echo "Built in $path_output\n";
+}
+/**
+ * extrapolate the target module using the file absolute path
+ * @param  string $filePath
+ * @return string
+ */
+function _extractTarget($filePath)
+{
+    foreach (_getTargetMap() as $tMap) {
+        $pattern = '#' . $tMap['path'] . '#';
+        if (preg_match($pattern, $filePath)) {
+            return $tMap['target'];
+        }
+    }
+    return 'mage';
+}
+/**
+ * get target map
+ * @return array
+ */
+function _getTargetMap()
+{
+    return array(
+        array('path' => 'app/etc', 'target' => 'mageetc'),
+        array('path' => 'app/code/local', 'target' => 'magelocal'),
+        array('path' => 'app/code/community', 'target' => 'magecommunity'),
+        array('path' => 'app/code/core', 'target' => 'magecore'),
+        array('path' => 'app/design', 'target' => 'magedesign'),
+        array('path' => 'lib', 'target' => 'magelib'),
+        array('path' => 'app/locale', 'target' => 'magelocale'),
+        array('path' => 'media/', 'target' => 'magemedia'),
+        array('path' => 'skin/', 'target' => 'mageskin'),
+        array('path' => 'http://', 'target' => 'mageweb'),
+        array('path' => 'https://', 'target' => 'mageweb'),
+        array('path' => 'Test/', 'target' => 'magetest'),
+    );
+}
+function createExtension($files, $config, $tempDir)
+{
+    $extensionFileName = $tempDir . DIRECTORY_SEPARATOR . $config['extension_name'] . '.xml';
+    file_put_contents($extensionFileName, buildExtensionXml($files, $config));
+}
+function buildExtensionXml($files, $config)
+{
+    $xml = simplexml_load_string('<_/>');
+    $xml->addChild('form_key', isset($config['form_key']) ? $config['form_key'] : uniqid());
+    $xml->addChild('_create', isset($config['_create']) ? $config['_create'] : '');
+    $xml->addChild('name', $config['extension_name']);
+    $xml->addChild('channel', $config['channel']);
+    $versionIds = $xml->addChild('version_ids');
+    $versionIds->addChild('version_ids', 2);
+    $versionIds->addChild('version_ids', 1);
+    $xml->addChild('summary', $config['summary']);
+    $xml->addChild('description', $config['description']);
+    $xml->addChild('license', $config['license']);
+    $xml->addChild('license_uri', isset($config['license_uri']) ? $config['license_uri'] : '');
+    $xml->addChild('version', $config['extension_version']);
+    $xml->addChild('stability', $config['stability']);
+    $xml->addChild('notes', $config['notes']);
+
+    $authors = $xml->addChild('authors');
+    $authorName = $authors->addChild('name');
+    $authorName->addChild('name', $config['author_name']);
+
+    $authorUser = $authors->addChild('user');
+    $authorUser->addChild('user', $config['author_user']);
+
+    $authorEmail = $authors->addChild('email');
+    $authorEmail->addChild('email', $config['author_email']);
+
+    $xml->addChild('depends_php_min', $config['php_min']);
+    $xml->addChild('depends_php_max', $config['php_max']);
+
+    $node = $xml->addChild('contents');
+    $targetNode = $node->addChild('target');
+    $pathNode = $node->addChild('path');
+    $typeNode = $node->addChild('type');
+    $includeNode = $node->addChild('include');
+    $ignoreNode = $node->addChild('ignore');
+
+    foreach ($files as $file) {
+        $targetNode->addChild('target', _extractTarget($file));
+        $pathNode->addChild('path', $file);
+        $typeNode->addChild('type', 'file');
+        $includeNode->addChild('include');
+        $ignoreNode->addChild('ignore');
+    }
+
+    return $xml->asXml();
 }
 main($argv);
