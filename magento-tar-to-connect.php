@@ -288,7 +288,7 @@ function main($argv)
     
     file_put_contents($temp_dir . '/package.xml',$xml);    
     // Creating extension xml for connect using the extension name
-    createExtension($files, $config, $temp_dir);
+    create_extension_xml($files, $config, $temp_dir);
     echo $temp_dir,"\n";
     
     if(!is_dir($path_output))
@@ -310,9 +310,9 @@ function main($argv)
  * @param  string $filePath
  * @return string
  */
-function _extractTarget($filePath)
+function extract_target($filePath)
 {
-    foreach (_getTargetMap() as $tMap) {
+    foreach (get_target_map() as $tMap) {
         $pattern = '#' . $tMap['path'] . '#';
         if (preg_match($pattern, $filePath)) {
             return $tMap['target'];
@@ -324,7 +324,7 @@ function _extractTarget($filePath)
  * get target map
  * @return array
  */
-function _getTargetMap()
+function get_target_map()
 {
     return array(
         array('path' => 'app/etc', 'target' => 'mageetc'),
@@ -341,12 +341,12 @@ function _getTargetMap()
         array('path' => 'Test/', 'target' => 'magetest'),
     );
 }
-function createExtension($files, $config, $tempDir)
+function create_extension_xml($files, $config, $tempDir)
 {
     $extensionFileName = $tempDir . DIRECTORY_SEPARATOR . $config['extension_name'] . '.xml';
-    file_put_contents($extensionFileName, buildExtensionXml($files, $config));
+    file_put_contents($extensionFileName, build_extension_xml($files, $config));
 }
-function buildExtensionXml($files, $config)
+function build_extension_xml($files, $config)
 {
     $xml = simplexml_load_string('<_/>');
     $xml->addChild('form_key', isset($config['form_key']) ? $config['form_key'] : uniqid());
@@ -385,7 +385,7 @@ function buildExtensionXml($files, $config)
     $ignoreNode = $node->addChild('ignore');
 
     foreach ($files as $file) {
-        $targetNode->addChild('target', _extractTarget($file));
+        $targetNode->addChild('target', extract_target($file));
         $pathNode->addChild('path', $file);
         $typeNode->addChild('type', 'file');
         $includeNode->addChild('include');
