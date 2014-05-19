@@ -287,8 +287,6 @@ function main($argv)
     $xml        = create_package_xml($files,$temp_dir,$config);
     
     file_put_contents($temp_dir . '/package.xml',$xml);    
-    // Creating extension xml for connect using the extension name
-    create_extension_xml($files, $config, $temp_dir);
     echo $temp_dir,"\n";
     
     if(!is_dir($path_output))
@@ -301,6 +299,8 @@ function main($argv)
     
     shell_exec('gzip '  . $path_output . '/' . $archive_files);
     shell_exec('mv '    . $path_output . '/' . $archive_files.'.gz '.$path_output.'/' . $archive_connect);
+    // Creating extension xml for connect using the extension name
+    create_extension_xml($files, $config, $temp_dir, $path_output);
     #echo $xml;
     #echo "\nDone\n";
     echo "Built in $path_output\n";
@@ -341,10 +341,15 @@ function get_target_map()
         array('path' => 'Test/', 'target' => 'magetest'),
     );
 }
-function create_extension_xml($files, $config, $tempDir)
+function create_extension_xml($files, $config, $tempDir, $path_output)
 {
-    $extensionFileName = $tempDir . DIRECTORY_SEPARATOR . $config['extension_name'] . '.xml';
+    $extensionPath = $tempDir . DIRECTORY_SEPARATOR . 'var/connect/';
+    if (!is_dir($extensionPath)) {
+        mkdir($extensionPath, 0777, true);
+    }
+    $extensionFileName = $extensionPath . $config['extension_name'] . '.xml';
     file_put_contents($extensionFileName, build_extension_xml($files, $config));
+    shell_exec('cp -Rf '    . $tempDir . DIRECTORY_SEPARATOR . 'var '. $path_output);
 }
 function build_extension_xml($files, $config)
 {
