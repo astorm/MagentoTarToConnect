@@ -164,6 +164,11 @@ function validate_config($config)
             $config['author_email'] = trim($email);
         }
     }
+    
+    if(!array_key_exists('extensions', $config))
+    {
+        $config['extensions'] = null;
+    }
     return $config;
     
     
