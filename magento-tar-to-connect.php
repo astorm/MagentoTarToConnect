@@ -299,8 +299,104 @@ function main($argv)
     
     shell_exec('gzip '  . $path_output . '/' . $archive_files);
     shell_exec('mv '    . $path_output . '/' . $archive_files.'.gz '.$path_output.'/' . $archive_connect);
+    // Creating extension xml for connect using the extension name
+    create_extension_xml($files, $config, $temp_dir, $path_output);
     #echo $xml;
     #echo "\nDone\n";
     echo "Built in $path_output\n";
+}
+/**
+ * extrapolate the target module using the file absolute path
+ * @param  string $filePath
+ * @return string
+ */
+function extract_target($filePath)
+{
+    foreach (get_target_map() as $tMap) {
+        $pattern = '#' . $tMap['path'] . '#';
+        if (preg_match($pattern, $filePath)) {
+            return $tMap['target'];
+        }
+    }
+    return 'mage';
+}
+/**
+ * get target map
+ * @return array
+ */
+function get_target_map()
+{
+    return array(
+        array('path' => 'app/etc', 'target' => 'mageetc'),
+        array('path' => 'app/code/local', 'target' => 'magelocal'),
+        array('path' => 'app/code/community', 'target' => 'magecommunity'),
+        array('path' => 'app/code/core', 'target' => 'magecore'),
+        array('path' => 'app/design', 'target' => 'magedesign'),
+        array('path' => 'lib', 'target' => 'magelib'),
+        array('path' => 'app/locale', 'target' => 'magelocale'),
+        array('path' => 'media/', 'target' => 'magemedia'),
+        array('path' => 'skin/', 'target' => 'mageskin'),
+        array('path' => 'http://', 'target' => 'mageweb'),
+        array('path' => 'https://', 'target' => 'mageweb'),
+        array('path' => 'Test/', 'target' => 'magetest'),
+    );
+}
+function create_extension_xml($files, $config, $tempDir, $path_output)
+{
+    $extensionPath = $tempDir . DIRECTORY_SEPARATOR . 'var/connect/';
+    if (!is_dir($extensionPath)) {
+        mkdir($extensionPath, 0777, true);
+    }
+    $extensionFileName = $extensionPath . $config['extension_name'] . '.xml';
+    file_put_contents($extensionFileName, build_extension_xml($files, $config));
+    shell_exec('cp -Rf '    . $tempDir . DIRECTORY_SEPARATOR . 'var '. $path_output);
+}
+function build_extension_xml($files, $config)
+{
+    $xml = simplexml_load_string('<_/>');
+    $xml->addChild('form_key', isset($config['form_key']) ? $config['form_key'] : uniqid());
+    $xml->addChild('_create', isset($config['_create']) ? $config['_create'] : '');
+    $xml->addChild('name', $config['extension_name']);
+    $xml->addChild('channel', $config['channel']);
+    $versionIds = $xml->addChild('version_ids');
+    $versionIds->addChild('version_ids', 2);
+    $versionIds->addChild('version_ids', 1);
+    $xml->addChild('summary', $config['summary']);
+    $xml->addChild('description', $config['description']);
+    $xml->addChild('license', $config['license']);
+    $xml->addChild('license_uri', isset($config['license_uri']) ? $config['license_uri'] : '');
+    $xml->addChild('version', $config['extension_version']);
+    $xml->addChild('stability', $config['stability']);
+    $xml->addChild('notes', $config['notes']);
+
+    $authors = $xml->addChild('authors');
+    $authorName = $authors->addChild('name');
+    $authorName->addChild('name', $config['author_name']);
+
+    $authorUser = $authors->addChild('user');
+    $authorUser->addChild('user', $config['author_user']);
+
+    $authorEmail = $authors->addChild('email');
+    $authorEmail->addChild('email', $config['author_email']);
+
+    $xml->addChild('depends_php_min', $config['php_min']);
+    $xml->addChild('depends_php_max', $config['php_max']);
+
+    $node = $xml->addChild('contents');
+    $targetNode = $node->addChild('target');
+    $pathNode = $node->addChild('path');
+    $typeNode = $node->addChild('type');
+    $includeNode = $node->addChild('include');
+    $ignoreNode = $node->addChild('ignore');
+
+    foreach ($files as $file) {
+        $targetNode->addChild('target', extract_target($file));
+        $pathNode->addChild('path', $file);
+        $typeNode->addChild('type', 'file');
+        $includeNode->addChild('include');
+        $ignoreNode->addChild('ignore');
+    }
+
+    return $xml->asXml();
 }
 main($argv);
