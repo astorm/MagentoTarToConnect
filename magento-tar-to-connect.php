@@ -359,33 +359,33 @@ function create_extension_xml($files, $config, $tempDir, $path_output)
 function build_extension_xml($files, $config)
 {
     $xml = simplexml_load_string('<_/>');
-    $xml->addChild('form_key', isset($config['form_key']) ? $config['form_key'] : uniqid());
-    $xml->addChild('_create', isset($config['_create']) ? $config['_create'] : '');
-    $xml->addChild('name', $config['extension_name']);
-    $xml->addChild('channel', $config['channel']);
+    $xml->addChild('form_key')->value = isset($config['form_key']) ? $config['form_key'] : uniqid();
+    $xml->addChild('_create')->value = isset($config['_create']) ? $config['_create'] : '';
+    $xml->addChild('name')->value = $config['extension_name'];
+    $xml->addChild('channel')->value = $config['channel'];
     $versionIds = $xml->addChild('version_ids');
-    $versionIds->addChild('version_ids', 2);
-    $versionIds->addChild('version_ids', 1);
-    $xml->addChild('summary', $config['summary']);
-    $xml->addChild('description', $config['description']);
-    $xml->addChild('license', $config['license']);
-    $xml->addChild('license_uri', isset($config['license_uri']) ? $config['license_uri'] : '');
-    $xml->addChild('version', $config['extension_version']);
-    $xml->addChild('stability', $config['stability']);
-    $xml->addChild('notes', $config['notes']);
+    $versionIds->addChild('version_ids')->value = 2;
+    $versionIds->addChild('version_ids')->value = 1;
+    $xml->addChild('summary')->value = $config['summary'];
+    $xml->addChild('description')->value = $config['description'];
+    $xml->addChild('license')->value = $config['license'];
+    $xml->addChild('license_uri')->value = isset($config['license_uri']) ? $config['license_uri'] : '';
+    $xml->addChild('version')->value = $config['extension_version'];
+    $xml->addChild('stability')->value = $config['stability'];
+    $xml->addChild('notes')->value = $config['notes'];
 
     $authors = $xml->addChild('authors');
     $authorName = $authors->addChild('name');
-    $authorName->addChild('name', $config['author_name']);
+    $authorName->addChild('name')->value = $config['author_name'];
 
     $authorUser = $authors->addChild('user');
-    $authorUser->addChild('user', $config['author_user']);
+    $authorUser->addChild('user')->value = $config['author_user'];
 
     $authorEmail = $authors->addChild('email');
-    $authorEmail->addChild('email', $config['author_email']);
+    $authorEmail->addChild('email')->value = $config['author_email'];
 
-    $xml->addChild('depends_php_min', $config['php_min']);
-    $xml->addChild('depends_php_max', $config['php_max']);
+    $xml->addChild('depends_php_min')->value = $config['php_min'];
+    $xml->addChild('depends_php_max')->value = $config['php_max'];
 
     $node = $xml->addChild('contents');
     $targetNode = $node->addChild('target');
@@ -395,9 +395,9 @@ function build_extension_xml($files, $config)
     $ignoreNode = $node->addChild('ignore');
 
     foreach ($files as $file) {
-        $targetNode->addChild('target', extract_target($file));
-        $pathNode->addChild('path', $file);
-        $typeNode->addChild('type', 'file');
+        $targetNode->addChild('target')->value = extract_target($file);
+        $pathNode->addChild('path')->value = $file;
+        $typeNode->addChild('type')->value = 'file';
         $includeNode->addChild('include');
         $ignoreNode->addChild('ignore');
     }
