@@ -72,7 +72,7 @@ Where `example-config.php` is a PHP file which returns a set of configuration ke
 
 ## Building a `phar` with Phing
 
-The project also includes a `phing` build.xml file.  This may be used to create an executable `phar` of the script, allow for easy usage.  To build the phar, simply run
+The project also includes a `phing` build.xml file.  You can use this to create an executable `phar` of the script.  If you're not familiar, a `phar` is sort of like a stand alone PHP executable. You can [read more here](http://php.net/phar).
 
     $ phing create_phar
     
