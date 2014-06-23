@@ -213,6 +213,20 @@ function get_module_version($files)
             }
         }
     }
+    
+    foreach($configs as $file)
+    {
+        $xml = simplexml_load_file($file);
+        $modules = $xml->xpath('//modules');
+        foreach($modules[0] as $module)
+        {
+            $version = (string)$module->version;
+            if(!empty($version))
+            {
+                return $version;
+            }
+        }
+    }
 }
 
 function check_module_version_vs_package_version($files, $extension_version)
