@@ -373,49 +373,158 @@ function create_extension_xml($files, $config, $tempDir, $path_output)
 function build_extension_xml($files, $config)
 {
     $xml = simplexml_load_string('<_/>');
-    $xml->addChild('form_key')->value = isset($config['form_key']) ? $config['form_key'] : uniqid();
-    $xml->addChild('_create')->value = isset($config['_create']) ? $config['_create'] : '';
-    $xml->addChild('name')->value = $config['extension_name'];
-    $xml->addChild('channel')->value = $config['channel'];
-    $versionIds = $xml->addChild('version_ids');
-    $versionIds->addChild('version_ids')->value = 2;
-    $versionIds->addChild('version_ids')->value = 1;
-    $xml->addChild('summary')->value = $config['summary'];
-    $xml->addChild('description')->value = $config['description'];
-    $xml->addChild('license')->value = $config['license'];
-    $xml->addChild('license_uri')->value = isset($config['license_uri']) ? $config['license_uri'] : '';
-    $xml->addChild('version')->value = $config['extension_version'];
-    $xml->addChild('stability')->value = $config['stability'];
-    $xml->addChild('notes')->value = $config['notes'];
+    $build_data = get_build_data($xml, $files, $config);
 
-    $authors = $xml->addChild('authors');
-    $authorName = $authors->addChild('name');
-    $authorName->addChild('name')->value = $config['author_name'];
-
-    $authorUser = $authors->addChild('user');
-    $authorUser->addChild('user')->value = $config['author_user'];
-
-    $authorEmail = $authors->addChild('email');
-    $authorEmail->addChild('email')->value = $config['author_email'];
-
-    $xml->addChild('depends_php_min')->value = $config['php_min'];
-    $xml->addChild('depends_php_max')->value = $config['php_max'];
-
-    $node = $xml->addChild('contents');
-    $targetNode = $node->addChild('target');
-    $pathNode = $node->addChild('path');
-    $typeNode = $node->addChild('type');
-    $includeNode = $node->addChild('include');
-    $ignoreNode = $node->addChild('ignore');
-
-    foreach ($files as $file) {
-        $targetNode->addChild('target')->value = extract_target($file);
-        $pathNode->addChild('path')->value = $file;
-        $typeNode->addChild('type')->value = 'file';
-        $includeNode->addChild('include');
-        $ignoreNode->addChild('ignore');
+    foreach ($build_data as $key => $value) {
+        if (is_array($value) && function_exists($key)) {
+            call_user_func_array($key, $value);
+        } else {
+            add_child_node($xml, $key, $value);
+        }
     }
 
     return $xml->asXml();
+}
+/**
+ * Get an array of data to build the extension xml. The array of data will contains the key necessary 
+ * to build each node and key that are actual callback functions to be called to build sub-section  of the xml.
+ * @param  SimpleXMLElement $xml
+ * @param  array $files
+ * @param  array $config
+ * @return array
+ */
+function get_build_data(SimpleXMLElement $xml, array $files, array $config)
+{
+    return array(
+        'form_key' => isset($config['form_key']) ? $config['form_key'] : uniqid(),
+        '_create' => isset($config['_create']) ? $config['_create'] : '',
+        'name' => $config['extension_name'],
+        'channel'=> $config['channel'],
+        'build_version_ids_node' => array($xml),
+        'summary' => $config['summary'],
+        'description' => $config['description'],
+        'license' => $config['license'],
+        'license_uri' => isset($config['license_uri']) ? $config['license_uri'] : '',
+        'version' => $config['extension_version'],
+        'stability' => $config['stability'],
+        'notes' => $config['notes'],
+        'build_authors_node' => array($xml, $config),
+        'build_php_depends_node' => array($xml, $config),
+        'build_contents_node' => array($xml, $files)
+    );
+}
+/**
+ * Remove a passed in file absolute path and return the relative path to the Magento application file context.
+ * @param  string $file
+ * @return string
+ */
+function extract_relative_path($file)
+{
+    $pattern = '/app\/etc\/|app\/code\/community\/|app\/code\/local\/|app\/design\/|lib\/|app\/locale\/|skin\/|js\//';
+    $relativePath = split_file_path($file, $pattern);
+    if ($file !== $relativePath) {
+        return $relativePath;
+    }
+    $shellDir = 'shell';
+    $relativePath = split_file_path($file, '/' . $shellDir . '\//');
+    return ($file !== $relativePath) ? $shellDir . DIRECTORY_SEPARATOR . $relativePath : $file;
+}
+/**
+ * Split a file path using the passed in pattern and file absolute path and return
+ * the relative path to the file.
+ * @param  string $file
+ * @param  string $pattern
+ * @return string The relative path to file
+ */
+function split_file_path($file, $pattern)
+{
+    $splitPath = preg_split($pattern, $file, -1);
+    return (count($splitPath) > 1) ? $splitPath[1] : $file;
+}
+/**
+ * Build 'contents' node including all its child nodes.
+ * @param  SimpleXMLElement $xml
+ * @param  array $files
+ * @return void
+ */
+function build_contents_node(SimpleXMLElement $xml, array $files)
+{
+    $node = add_child_node($xml, 'contents', '');
+    $lists = array('target', 'path', 'type', 'include', 'ignore');
+    $call_backs = array_combine($lists, array('extract_target', 'extract_relative_path', 'file', '', ''));
+
+    $parent_nodes = array_reduce($lists, function ($item, $key) use ($node) {
+        $item[$key] = add_child_node($node, $key, '');
+        return $item;
+    });
+
+    $child_nodes = array();
+    // Adding empty node, this is a workaround for the Magento connect bug. 
+    // When no empty nodes are added the first file is removed from the package extension.
+    foreach ($parent_nodes as $child_key => $parent_nodes) {
+        $child_nodes[$child_key] = add_child_node($parent_nodes, $child_key, '');
+    }
+
+    foreach ($files as $file) {
+        foreach ($child_nodes as $key => $child_node) {
+            $call_back = $call_backs[$key];
+            $value = ($call_back === 'file') ? $call_back : (function_exists($call_back) ? call_user_func_array($call_back, array($file)) : $call_back);
+            add_child_node($child_node, $key, $value);
+        }
+    }
+}
+/**
+ * Add a 'depends_php_min' node and a 'depends_php_max' to the passed in SimpleXMLElement class instance object.
+ * @param  SimpleXMLElement $xml
+ * @param  array $config
+ * @return void
+ */
+function build_php_depends_node(SimpleXMLElement $xml, array $config)
+{
+    $data = array('depends_php_min' => 'php_min', 'depends_php_max' => 'php_max');
+    foreach ($data as $key => $cfg_key) {
+        add_child_node($xml, $key, $config[$cfg_key]);
+    }
+}
+/**
+ * Build 'authors' node including all its child nodes.
+ * @param  SimpleXMLElement $xml
+ * @param  array $config
+ * @return void
+ */
+function build_authors_node(SimpleXMLElement $xml, array $config)
+{
+    $meta = array('name' => 'author_name', 'user' => 'author_user', 'email' => 'author_email');
+    $authors = add_child_node($xml, 'authors', '');
+    foreach ($meta as $key => $cfg_key) {
+        $parentNode = add_child_node($authors, $key, '');
+        foreach (array_filter(explode(',', $config[$cfg_key])) as $value) {
+            add_child_node($parentNode, $key, $value);
+        }
+    }
+}
+/**
+ * Build 'version_ids' node including all its child nodes.
+ * @param  SimpleXMLElement $xml
+ * @return void
+ */
+function build_version_ids_node(SimpleXMLElement $xml)
+{
+    $key = 'version_ids';
+    $parentNode = add_child_node($xml, $key, '');
+    foreach (array(2, 1) as $version) {
+        add_child_node($parentNode, $key, $version);
+    }
+}
+/**
+ * Add child node to a passed in SimpleXMLElement class instance object.
+ * @param  SimpleXMLElement $context
+ * @param  string $name
+ * @param  string $value
+ * @return SimpleXMLElement
+ */
+function add_child_node(SimpleXMLElement $context, $name, $value='')
+{
+    return trim($value) ? $context->addChild($name, $value) : $context->addChild($name);
 }
 main($argv);
