@@ -13,11 +13,11 @@ error_reporting(E_ALL | E_STRICT);
 ini_set('display_errors', 1);
 date_default_timezone_set('America/Los_Angeles');
 
-require_once dirname(__FILE__) . '/'. 'vendor/magento/downloader/lib/Mage/Archive/Helper/File.php';
-require_once dirname(__FILE__) . '/'. 'vendor/magento/downloader/lib/Mage/Archive/Interface.php';
-require_once dirname(__FILE__) . '/'. 'vendor/magento/downloader/lib/Mage/Archive/Abstract.php';
-require_once dirname(__FILE__) . '/'. 'vendor/magento/downloader/lib/Mage/Archive/Tar.php';
-require_once dirname(__FILE__) . '/'. 'vendor/magento/downloader/lib/Mage/Exception.php';
+require_once dirname(__FILE__) . '/'. 'src/magento/downloader/lib/Mage/Archive/Helper/File.php';
+require_once dirname(__FILE__) . '/'. 'src/magento/downloader/lib/Mage/Archive/Interface.php';
+require_once dirname(__FILE__) . '/'. 'src/magento/downloader/lib/Mage/Archive/Abstract.php';
+require_once dirname(__FILE__) . '/'. 'src/magento/downloader/lib/Mage/Archive/Tar.php';
+require_once dirname(__FILE__) . '/'. 'src/magento/downloader/lib/Mage/Exception.php';
 
 //from http://php.net/glob
 if ( ! function_exists('glob_recursive'))
@@ -322,7 +322,16 @@ function main($argv)
     create_extension_xml($files, $config, $temp_dir, $path_output);
     #echo $xml;
     #echo "\nDone\n";
-    echo "Built in $path_output\n";
+    
+    echo "\nBuild Complete\n";
+    echo '--------------------------------------------------',"\n";
+    echo "Built tgz in $path_output\n\n";
+    echo 
+"Built package.xml for Connect Manager in
+
+    $path_output/var/connect 
+
+place in `/path/to/magento/var/connect to load extension in Connect Manager\n";
 }
 /**
  * extrapolate the target module using the file absolute path

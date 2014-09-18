@@ -1,0 +1,17 @@
+{
+    "name": "pulsestorm/magento-tar-to-connect",
+    "description": "A duct-tape shell script for packaging Magento Extenstions",
+    "authors": [
+        {
+            "name": "Alan Storm",
+            "email": "astorm@alanstorm.com"
+        }
+    ],
+    "require": {
+
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.2.*"
+    }
+    
+}
