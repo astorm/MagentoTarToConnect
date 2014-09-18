@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "0d75ae45cd6904900700a30cd7dfff8c",
+    "hash": "17a7f23966f94a1a1f20943033ec73e2",
     "packages": [
 
     ],
@@ -121,6 +121,56 @@
                 "service location"
             ],
             "time": "2013-11-09 22:30:54"
+        },
+        {
+            "name": "pear/archive_tar",
+            "version": "1.3.11",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pear/Archive_Tar.git",
+                "reference": "23341344e19bbab1056cf2d2773f28cfccf787a3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/pear/Archive_Tar/zipball/23341344e19bbab1056cf2d2773f28cfccf787a3",
+                "reference": "23341344e19bbab1056cf2d2773f28cfccf787a3",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=4.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Archive_Tar": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Michiel Rook",
+                    "email": "mrook@php.net",
+                    "role": "Lead"
+                },
+                {
+                    "name": "Vincent Blavet",
+                    "email": "vincent@phpconcept.net"
+                },
+                {
+                    "name": "Greg Beaver",
+                    "email": "greg@chiaraquartet.net"
+                }
+            ],
+            "description": "Tar file management class",
+            "homepage": "https://github.com/pear/Archive_Tar",
+            "keywords": [
+                "archive",
+                "tar"
+            ],
+            "time": "2013-02-09 11:44:32"
         },
         {
             "name": "phpunit/php-code-coverage",
