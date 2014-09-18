@@ -8,7 +8,7 @@
     <fileset dir="." id="root_folder">
         <include name="magento-tar-to-connect.php" />
     </fileset>
-    <fileset dir="vendor" id="vendor_folder">
+    <fileset dir="src" id="src_folder">
         <include name="magento/downloader/lib/Mage/Archive/Abstract.php" />
         <include name="magento/downloader/lib/Mage/Archive/Helper" />
         <include name="magento/downloader/lib/Mage/Archive/Helper/File.php" />
@@ -28,7 +28,7 @@
                 </element>
             </metadata>
             <fileset refid="root_folder" />
-            <fileset refid="vendor_folder" />
+            <fileset refid="src_folder" />
         </pharpackage>
 
         <!-- make phar executable -->
