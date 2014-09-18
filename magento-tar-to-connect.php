@@ -450,23 +450,27 @@ function split_file_path($file, $pattern)
 function build_contents_node(SimpleXMLElement $xml, array $files)
 {
     $node = add_child_node($xml, 'contents', '');
-    $lists = array('target', 'path', 'type', 'include', 'ignore');
-    $call_backs = array_combine($lists, array('extract_target', 'extract_relative_path', 'file', '', ''));
+    $call_backs = array(
+        'target' => 'extract_target', 
+        'path' => 'extract_relative_path', 
+        'type' => 'file', 
+        'include' => '', 
+        'ignore' => ''
+    );
 
-    $parent_nodes = array_reduce($lists, function ($item, $key) use ($node) {
+    $parent_nodes = array_reduce(array_keys($call_backs), function ($item, $key) use ($node) {
         $item[$key] = add_child_node($node, $key, '');
         return $item;
     });
 
-    $child_nodes = array();
     // Adding empty node, this is a workaround for the Magento connect bug. 
     // When no empty nodes are added the first file is removed from the package extension.
-    foreach ($parent_nodes as $child_key => $parent_nodes) {
-        $child_nodes[$child_key] = add_child_node($parent_nodes, $child_key, '');
+    foreach ($parent_nodes as $child_key => $child_node) {
+        add_child_node($child_node, $child_key, '');
     }
 
     foreach ($files as $file) {
-        foreach ($child_nodes as $key => $child_node) {
+        foreach ($parent_nodes as $key => $child_node) {
             $call_back = $call_backs[$key];
             $value = ($call_back === 'file') ? $call_back : (function_exists($call_back) ? call_user_func_array($call_back, array($file)) : $call_back);
             add_child_node($child_node, $key, $value);
@@ -525,6 +529,10 @@ function build_version_ids_node(SimpleXMLElement $xml)
  */
 function add_child_node(SimpleXMLElement $context, $name, $value='')
 {
-    return trim($value) ? $context->addChild($name, $value) : $context->addChild($name);
+    $child = $context->addChild($name);
+    if (trim($value)) {
+        $child->{0} = $value;
+    }
+    return $child;
 }
 main($argv);
