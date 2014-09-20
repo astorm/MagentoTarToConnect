@@ -24,6 +24,7 @@ require_once dirname(__FILE__) . '/'. 'src/magento/downloader/lib/Mage/Exception
 */
 class Pulsestorm_MagentoTarToConnect
 {
+    static public $verbose=true;
     //from http://php.net/glob
     // Does not support flag GLOB_BRACE    
     static public function glob_recursive($pattern, $flags = 0)
@@ -38,16 +39,26 @@ class Pulsestorm_MagentoTarToConnect
     
     static public function input($string)
     {
-        echo $string . "\n] ";
+        self::output($string);
+        sellf::output(']');
         $handle = fopen ("php://stdin","r");
         $line = fgets($handle);        
         fclose($handle);
         return $line;
     }
     
+    static public function output($string)
+    {
+        if(!self::$verbose)
+        {
+            return;
+        }
+        echo $string,"\n";
+    }
+    
     static public function error($string)
     {
-        echo "ERROR: " . $string . "\n";
+        self::output("ERROR: " . $string);
         exit;
     }
     
@@ -187,6 +198,7 @@ class Pulsestorm_MagentoTarToConnect
             self::error("Could not find $config_name.  Create this file, or pass in an alternate");
         }
         $config = include $config_name;
+                
         $config = self::validate_config($config);
         return $config;
     }
@@ -260,12 +272,9 @@ class Pulsestorm_MagentoTarToConnect
         }
     }
     
-    static public function main($argv)
+    static public function buildExtensionFromConfig($config)
     {
-        $this_script = array_shift($argv);
-        $config_file = array_shift($argv);    
-        $config = self::load_config($config_file);
-        
+        ob_start();
         $base_dir           = $config['base_dir'];          //'/Users/alanstorm/Documents/github/Pulsestorm/var/build';
         $archive_files      = $config['archive_files'];     //'Pulsestorm_Modulelist.tar';    
         $path_output        = $config['path_output'];       //'/Users/alanstorm/Desktop/working';    
@@ -308,7 +317,7 @@ class Pulsestorm_MagentoTarToConnect
         $xml        = self::create_package_xml($files,$temp_dir,$config);
         
         file_put_contents($temp_dir . '/package.xml',$xml);    
-        echo $temp_dir,"\n";
+        self::output($temp_dir);
         
         if(!is_dir($path_output))
         {
@@ -321,19 +330,35 @@ class Pulsestorm_MagentoTarToConnect
         shell_exec('gzip '  . $path_output . '/' . $archive_files);
         shell_exec('mv '    . $path_output . '/' . $archive_files.'.gz '.$path_output.'/' . $archive_connect);
         // Creating extension xml for connect using the extension name
-        self::create_extension_xml($files, $config, $temp_dir, $path_output);
-        #echo $xml;
-        #echo "\nDone\n";
         
-        echo "\nBuild Complete\n";
-        echo '--------------------------------------------------',"\n";
-        echo "Built tgz in $path_output\n\n";
-        echo 
+        self::output("Skipping self::create_extension_xml because I don't know how it works and need to get " . 
+        "test framework working.");
+        //self::create_extension_xml($files, $config, $temp_dir, $path_output);
+        self::output('');
+        self::output('Build Complete');
+        self::output('--------------------------------------------------');
+        self::output( "Built tgz in $path_output\n");
+        
+        self::output( 
     "Built package.xml for Connect Manager in
     
         $path_output/var/connect 
     
-    place in `/path/to/magento/var/connect to load extension in Connect Manager\n";
+    place in `/path/to/magento/var/connect to load extension in Connect Manager");    
+    
+        return ob_get_clean();
+    }
+    
+    static public function main($argv)
+    {
+        $this_script = array_shift($argv);
+        $config_file = array_shift($argv);    
+        $config = self::load_config($config_file);
+                
+        self::output(
+            self::buildExtensionFromConfig($config)
+        );
+        
     }
     /**
      * extrapolate the target module using the file absolute path
@@ -547,5 +572,7 @@ class Pulsestorm_MagentoTarToConnect
         return $child;
     }
 }
-
-Pulsestorm_MagentoTarToConnect::main($argv);
+if(isset($argv))
+{
+    Pulsestorm_MagentoTarToConnect::main($argv);
+}
