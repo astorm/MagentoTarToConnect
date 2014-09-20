@@ -41,20 +41,20 @@ class Pulsestorm_MagentoTarToConnect
     static public function input($string)
     {
         self::output($string);
-        sellf::output(']');
+        self::output('] ','');
         $handle = fopen ("php://stdin","r");
         $line = fgets($handle);        
         fclose($handle);
         return $line;
     }
     
-    static public function output($string)
+    static public function output($string, $newline="\n")
     {
         if(!self::$verbose)
         {
             return;
         }
-        echo $string,"\n";
+        echo $string,$newline;
     }
     
     static public function error($string)
@@ -342,11 +342,11 @@ class Pulsestorm_MagentoTarToConnect
         self::output( "Built tgz in $path_output\n");
         
         self::output( 
-    "Built package.xml for Connect Manager in
+    "Built XML for Connect Manager in
     
-        $path_output/var/connect 
+    $path_output/var/connect 
     
-    place in `/path/to/magento/var/connect to load extension in Connect Manager");    
+place in `/path/to/magento/var/connect to load extension in Connect Manager");    
     
         return ob_get_clean();
     }
