@@ -5,7 +5,7 @@ A small shell script to automatically package tar archives into Magento's Connec
 
 ### Description
 
-Under the hood Magento Connect 2.0 packages are actually tar'ed and gziped files with a specially formatted package manifest.  Well, they're almost `tar` and `gzip` files.  Magento implemented their own archiving and unarchiving code in PHP, and this code occasionally has problems with tar archives created via standard OS tools. 
+Under the hood Magento Connect 2.0 packages (Magento Connect 2.0 was introduced around the time of Magento CE 1.5) are actually tar'ed and gziped files with a specially formatted package manifest.  Well, they're almost `tar` and `gzip` files.  Magento implemented their own archiving and unarchiving code in PHP, and this code occasionally has problems with tar archives created via standard OS tools. 
 
 This shell script will take a standard tar archive, untar it, build the Connect `package.xml` manifest, and then re-tar and gzip the files **using Magento's code** (included in the `vendor` library here, but you can substitute your own).  This decreases the likelihood your package will be incompatible with Magento Connect. 
 
@@ -76,4 +76,29 @@ The project also includes a `phing` build.xml file.  You can use this to create 
 
     $ phing create_phar
     
+This will create a new `magento-tar-to-connect.phar` file in the main project directory.
+
+## Running the script stand alone    
+
+If you don't know how to use `phing` or `phar` files, you can run the scripts by copying
+
+    1. `magento-tar-to-connect.php` 
+    2. And the `src/magento` folder 
     
+To wherever you run your scripts from.  
+
+## Composer and Unit Tests
+
+[PHP Composer](https://getcomposer.org/) is not required to run this project.  However, we've included `composer.json` for installing `phpunit`.  After running `composer install` or `composer update`, you'll be able to run the unit tests with the following
+
+    vendor/bin/phpunit tests
+    
+Tests should be placed in 
+
+    tests/
+    
+See the test file
+
+    tests/ExampleTest.php
+    
+for instructions on how to load a test fixture (i.e. archive), and automatically build a `tgz` Magento connect extension from it.     
