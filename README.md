@@ -76,4 +76,29 @@ The project also includes a `phing` build.xml file.  You can use this to create 
 
     $ phing create_phar
     
+This will create a new `magento-tar-to-connect.phar` file in the main project directory.
+
+## Running the script stand alone    
+
+If you don't know how to use `phing` or `phar` files, you can run the scripts by copying
+
+    1. `magento-tar-to-connect.php` 
+    2. And the `src/magento` folder 
     
+To wherever you run your scripts from.  
+
+## Composer and Unit Tests
+
+[PHP Composer](https://getcomposer.org/) is not required to run this project.  However, we've included `composer.json` for installing `phpunit`.  After running `composer install` or `composer update`, you'll be able to run the unit tests with the following
+
+    vendor/bin/phpunit tests
+    
+Tests should be placed in 
+
+    tests/
+    
+See the test file
+
+    tests/ExampleTest.php
+    
+for instructions on how to load a test fixture (i.e. archive), and automatically build a `tgz` Magento connect extension from it.     
