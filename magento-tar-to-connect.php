@@ -20,7 +20,8 @@ require_once dirname(__FILE__) . '/'. 'src/magento/downloader/lib/Mage/Archive/T
 require_once dirname(__FILE__) . '/'. 'src/magento/downloader/lib/Mage/Exception.php';
 
 /**
-* Still a lot of Magento users stuck on systems with 5.2. Le sigh
+* Still a lot of Magento users stuck on systems with 5.2, no no namespaces
+* Le sigh
 */
 class Pulsestorm_MagentoTarToConnect
 {
@@ -59,6 +60,7 @@ class Pulsestorm_MagentoTarToConnect
     static public function error($string)
     {
         self::output("ERROR: " . $string);
+        self::output("Execution halted at " . __FILE__ . '::' . __LINE__);
         exit;
     }
     
@@ -331,9 +333,9 @@ class Pulsestorm_MagentoTarToConnect
         shell_exec('mv '    . $path_output . '/' . $archive_files.'.gz '.$path_output.'/' . $archive_connect);
         // Creating extension xml for connect using the extension name
         
-        self::output("Skipping self::create_extension_xml because I don't know how it works and need to get " . 
-        "test framework working.");
-        //self::create_extension_xml($files, $config, $temp_dir, $path_output);
+        //self::output("Skipping self::create_extension_xml because I don't know how it works and need to get " . 
+        //"test framework working.");
+        self::create_extension_xml($files, $config, $temp_dir, $path_output);
         self::output('');
         self::output('Build Complete');
         self::output('--------------------------------------------------');
@@ -397,22 +399,23 @@ class Pulsestorm_MagentoTarToConnect
         );
     }
     static public function create_extension_xml($files, $config, $tempDir, $path_output)
-    {
+    {        
         $extensionPath = $tempDir . DIRECTORY_SEPARATOR . 'var/connect/';
         if (!is_dir($extensionPath)) {
             mkdir($extensionPath, 0777, true);
         }
         $extensionFileName = $extensionPath . $config['extension_name'] . '.xml';
         file_put_contents($extensionFileName, self::build_extension_xml($files, $config));
+        
         shell_exec('cp -Rf '    . $tempDir . DIRECTORY_SEPARATOR . 'var '. $path_output);
     }
     static public function build_extension_xml($files, $config)
     {
         $xml = simplexml_load_string('<_/>');
         $build_data = self::get_build_data($xml, $files, $config);
-    
+        
         foreach ($build_data as $key => $value) {
-            if (is_array($value) && function_exists($key)) {
+            if (is_array($value) && is_callable($key)) {
                 call_user_func_array($key, $value);
             } else {
                 self::add_child_node($xml, $key, $value);
@@ -508,7 +511,7 @@ class Pulsestorm_MagentoTarToConnect
         foreach ($files as $file) {
             foreach ($parent_nodes as $key => $child_node) {
                 $call_back = $call_backs[$key];
-                $value = ($call_back === 'file') ? $call_back : (function_exists($call_back) ? call_user_func_array($call_back, array($file)) : $call_back);
+                $value = ($call_back === 'file') ? $call_back : (is_callable($call_back) ? call_user_func_array($call_back, array($file)) : $call_back);
                 self::add_child_node($child_node, $key, $value);
             }
         }

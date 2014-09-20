@@ -32,70 +32,6 @@ class MagentoTarToConnectBaseTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(true);
     }
     
-    public function testGetFixturePath()
-    {
-        $fixture = $this->_getFixturePath('first.txt');
-        $this->assertTrue(file_exists($fixture));
-    }
-    
-    public function testGetTarFixture()
-    {
-        $fixture = $this->_getFixturePath('first.tar');
-        $path    = $this->_untarIntoTemp($fixture);
-        
-        // echo "\n",$path . '/first.txt',"\n";
-        $this->assertTrue(file_exists($path . '/first.txt'));
-    }
-    
-    public function testCanReadExampleConfig()
-    {
-        return $this->assertTrue(
-            file_exists($this->_getBaseRespoitoryPath() . '/' . self::EXAMPLE_CONFIG)
-        );
-    }
-    
-    public function testCopyFixtureToBuild()
-    {
-        $fixture = $this->_getFixturePath('first.tar');
-        $this->_copyFixtureToBuild($fixture);
-
-        $this->assertTrue(file_exists(
-            $this->_getBaseBuildPath() . '/first.tar'
-        ));
-    }
-    
-    public function testRunTarToConnect()
-    {
-        $results = $this->_buildExtensionFromFixture('first.tar');
-        $this->assertTrue(file_exists($results['extension']));
-    }
-    
-    public function testRunTarToConnectNamedNonDefault()
-    {
-        $fixture = 'first.tar';
-        $name    = 'Pulsestorm_Unittestdifferent';
-        $config  = $this->_getBaseExtensionConfig($fixture);
-        $config['extension_name'] = $name;
-
-        $results = $this->_buildExtensionFromFixture('first.tar', $config);
-        $this->assertTrue((boolean)strpos($results['extension'], $name));
-        $this->assertTrue(file_exists($results['extension']));        
-    }
-    
-    public function testRunTarToConnectAndTmpExtraction()
-    {
-        $results = $this->_buildExtensionFromFixture('first.tar');
-        
-        $this->assertTrue(file_exists($results['extracted'] . '/package.xml'));
-        $this->assertTrue(file_exists($results['extracted'] . '/first.txt'));
-    }
-    
-    public function testBetter404()
-    {
-        $results = $this->_buildExtensionFromFixture('Pulsestorm_Better404.tar');
-        $this->assertTrue(file_exists($results['extension']));
-    }
-    
     protected function _getBaseExtensionConfig($fixture, $extension_name='Pulsestorm_Unittest', $extension_version='1.0.0', 
         $author_email='testing@example.com')
     {
@@ -122,18 +58,22 @@ class MagentoTarToConnectBaseTest extends PHPUnit_Framework_TestCase
             $config = $this->_getBaseExtensionConfig($fixture);
         }
 
+
         Pulsestorm_MagentoTarToConnect::buildExtensionFromConfig($config);
         
-        $extension_path = $this->_getBaseBuildPath() . '/' . 
+        $path_extension = $this->_getBaseBuildPath() . '/' . 
             $config['extension_name']       . '-' . 
             $config['extension_version']    . '.tgz';
         
-        $untared = $this->_untarIntoTemp($extension_path);
+        $path_connectxml = $this->_getBaseBuildPath() . '/var/connect/' .
+            $config['extension_name'] . '.xml';
+            
+        $untared = $this->_untarIntoTemp($path_extension);
         
         $results = array();
-        $results['extension'] = $extension_path;
-        $results['extracted'] = $untared;
-        
+        $results['extension']   = $path_extension;
+        $results['extracted']   = $untared;
+        $results['connect_xml'] = $path_connectxml;
         return $results;
         
     }
