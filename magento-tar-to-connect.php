@@ -28,12 +28,12 @@ class Pulsestorm_MagentoTarToConnect
     static public $verbose=true;
     //from http://php.net/glob
     // Does not support flag GLOB_BRACE    
-    static public function glob_recursive($pattern, $flags = 0)
+    static public function globRecursive($pattern, $flags = 0)
     {
         $files = glob($pattern, $flags);        
         foreach (glob(dirname($pattern).'/*', GLOB_ONLYDIR|GLOB_NOSORT) as $dir)
         {
-            $files = array_merge($files, self::glob_recursive($dir.'/'.basename($pattern), $flags));
+            $files = array_merge($files, self::globRecursive($dir.'/'.basename($pattern), $flags));
         }        
         return $files;
     }
@@ -65,7 +65,7 @@ class Pulsestorm_MagentoTarToConnect
     }
     
     
-    static public function create_package_xml_add_node($xml, $full_dir, $base_dir=false)
+    static public function createPackageXmlAddNode($xml, $full_dir, $base_dir=false)
     {
         $parts = explode("/",str_replace($base_dir.'/','',$full_dir));        
         $single_file  = array_pop($parts);
@@ -89,7 +89,7 @@ class Pulsestorm_MagentoTarToConnect
         $node->addAttribute('hash',md5_file($full_dir));
     }
             
-    static public function create_package_xml($files, $base_dir, $config)
+    static public function createPackageXml($files, $base_dir, $config)
     {
         $xml = simplexml_load_string('<package/>');    
         $xml->name          = $config['extension_name'];
@@ -143,14 +143,14 @@ class Pulsestorm_MagentoTarToConnect
         foreach($files as $file)
         {
             //$this->addFileNode($node,$temp_dir,$file);
-            self::create_package_xml_add_node($node, $file, $base_dir);
+            self::createPackageXmlAddNode($node, $file, $base_dir);
         }                
         //file_put_contents($temp_dir . '/package.xml', $xml->asXml());            
         
         return $xml->asXml();
     }
     
-    static public function get_temp_dir()
+    static public function getTempDir()
     {
         $name = tempnam(sys_get_temp_dir(),'tmp');
         unlink($name);
@@ -159,7 +159,7 @@ class Pulsestorm_MagentoTarToConnect
         return $name;
     }
     
-    static public function validate_config($config)
+    static public function validateConfig($config)
     {
         $keys = array('base_dir','archive_files','path_output',
         );
@@ -189,7 +189,7 @@ class Pulsestorm_MagentoTarToConnect
         
     }
     
-    static public function load_config($config_name=false)
+    static public function loadConfig($config_name=false)
     {
         if(!$config_name)
         {
@@ -201,11 +201,11 @@ class Pulsestorm_MagentoTarToConnect
         }
         $config = include $config_name;
                 
-        $config = self::validate_config($config);
+        $config = self::validateConfig($config);
         return $config;
     }
     
-    static public function get_module_version($files)
+    static public function getModuleVersion($files)
     {
         $configs = array();
         foreach($files as $file)
@@ -245,7 +245,7 @@ class Pulsestorm_MagentoTarToConnect
         }
     }
     
-    static public function check_module_version_vs_package_version($files, $extension_version)
+    static public function checkModuleVersionVsPackageVersion($files, $extension_version)
     {
         $configs = array();
         foreach($files as $file)
@@ -282,7 +282,7 @@ class Pulsestorm_MagentoTarToConnect
         $path_output        = $config['path_output'];       //'/Users/alanstorm/Desktop/working';    
         $archive_connect    = $config['extension_name'] . '-' . $config['extension_version'] . '.tgz';
         
-        $temp_dir   = self::get_temp_dir();        
+        $temp_dir   = self::getTempDir();        
         if($base_dir['0'] !== '/')
         {
             $base_dir = getcwd() . '/' . $base_dir;
@@ -301,22 +301,22 @@ class Pulsestorm_MagentoTarToConnect
         }
         shell_exec('rm '        . $temp_dir . '/' . $archive_files);
         
-        $all        = self::glob_recursive($temp_dir  . '/*');
-        $dirs       = self::glob_recursive($temp_dir .'/*',GLOB_ONLYDIR);
+        $all        = self::globRecursive($temp_dir  . '/*');
+        $dirs       = self::globRecursive($temp_dir .'/*',GLOB_ONLYDIR);
         $files      = array_diff($all, $dirs);
     
         if(isset($config['auto_detect_version']) && $config['auto_detect_version'] == true)
         {
-            $config['extension_version'] = self::get_module_version($files);
+            $config['extension_version'] = self::getModuleVersion($files);
             $archive_connect = $config['extension_name'] . '-' . $config['extension_version'] . '.tgz';
         }
         
         if(!$config['skip_version_compare'])
         {
-            self::check_module_version_vs_package_version($files, $config['extension_version']);
+            self::checkModuleVersionVsPackageVersion($files, $config['extension_version']);
         }
             
-        $xml        = self::create_package_xml($files,$temp_dir,$config);
+        $xml        = self::createPackageXml($files,$temp_dir,$config);
         
         file_put_contents($temp_dir . '/package.xml',$xml);    
         self::output($temp_dir);
@@ -333,9 +333,9 @@ class Pulsestorm_MagentoTarToConnect
         shell_exec('mv '    . $path_output . '/' . $archive_files.'.gz '.$path_output.'/' . $archive_connect);
         // Creating extension xml for connect using the extension name
         
-        //self::output("Skipping self::create_extension_xml because I don't know how it works and need to get " . 
+        //self::output("Skipping self::createExtensionXml because I don't know how it works and need to get " . 
         //"test framework working.");
-        self::create_extension_xml($files, $config, $temp_dir, $path_output);
+        self::createExtensionXml($files, $config, $temp_dir, $path_output);
         self::output('');
         self::output('Build Complete');
         self::output('--------------------------------------------------');
@@ -355,7 +355,7 @@ place in `/path/to/magento/var/connect to load extension in Connect Manager");
     {
         $this_script = array_shift($argv);
         $config_file = array_shift($argv);    
-        $config = self::load_config($config_file);
+        $config = self::loadConfig($config_file);
                 
         self::output(
             self::buildExtensionFromConfig($config)
@@ -367,9 +367,9 @@ place in `/path/to/magento/var/connect to load extension in Connect Manager");
      * @param  string $filePath
      * @return string
      */
-    static public function extract_target($filePath)
+    static public function extractTarget($filePath)
     {
-        foreach (self::get_target_map() as $tMap) {
+        foreach (self::getTargetMap() as $tMap) {
             $pattern = '#' . $tMap['path'] . '#';
             if (preg_match($pattern, $filePath)) {
                 return $tMap['target'];
@@ -381,7 +381,7 @@ place in `/path/to/magento/var/connect to load extension in Connect Manager");
      * get target map
      * @return array
      */
-    static public function get_target_map()
+    static public function getTargetMap()
     {
         return array(
             array('path' => 'app/etc', 'target' => 'mageetc'),
@@ -398,27 +398,27 @@ place in `/path/to/magento/var/connect to load extension in Connect Manager");
             array('path' => 'Test/', 'target' => 'magetest'),
         );
     }
-    static public function create_extension_xml($files, $config, $tempDir, $path_output)
+    static public function createExtensionXml($files, $config, $tempDir, $path_output)
     {        
         $extensionPath = $tempDir . DIRECTORY_SEPARATOR . 'var/connect/';
         if (!is_dir($extensionPath)) {
             mkdir($extensionPath, 0777, true);
         }
         $extensionFileName = $extensionPath . $config['extension_name'] . '.xml';
-        file_put_contents($extensionFileName, self::build_extension_xml($files, $config));
+        file_put_contents($extensionFileName, self::buildExtensionXml($files, $config));
         
         shell_exec('cp -Rf '    . $tempDir . DIRECTORY_SEPARATOR . 'var '. $path_output);
     }
-    static public function build_extension_xml($files, $config)
+    static public function buildExtensionXml($files, $config)
     {
         $xml = simplexml_load_string('<_/>');
-        $build_data = self::get_build_data($xml, $files, $config);
+        $build_data = self::getBuildData($xml, $files, $config);
         
         foreach ($build_data as $key => $value) {
             if (is_array($value) && is_callable($key)) {
                 call_user_func_array($key, $value);
             } else {
-                self::add_child_node($xml, $key, $value);
+                self::addChildNode($xml, $key, $value);
             }
         }
     
@@ -432,14 +432,14 @@ place in `/path/to/magento/var/connect to load extension in Connect Manager");
      * @param  array $config
      * @return array
      */
-    static public function get_build_data(SimpleXMLElement $xml, array $files, array $config)
+    static public function getBuildData(SimpleXMLElement $xml, array $files, array $config)
     {
         return array(
             'form_key' => isset($config['form_key']) ? $config['form_key'] : uniqid(),
             '_create' => isset($config['_create']) ? $config['_create'] : '',
             'name' => $config['extension_name'],
             'channel'=> $config['channel'],
-            'Pulsestorm_MagentoTarToConnect::build_version_ids_node' => array($xml),
+            'Pulsestorm_MagentoTarToConnect::buildVersionIdsNode' => array($xml),
             'summary' => $config['summary'],
             'description' => $config['description'],
             'license' => $config['license'],
@@ -447,9 +447,9 @@ place in `/path/to/magento/var/connect to load extension in Connect Manager");
             'version' => $config['extension_version'],
             'stability' => $config['stability'],
             'notes' => $config['notes'],
-            'Pulsestorm_MagentoTarToConnect::build_authors_node' => array($xml, $config),
-            'Pulsestorm_MagentoTarToConnect::build_php_depends_node' => array($xml, $config),
-            'Pulsestorm_MagentoTarToConnect::build_contents_node' => array($xml, $files)
+            'Pulsestorm_MagentoTarToConnect::buildAuthorsNode' => array($xml, $config),
+            'Pulsestorm_MagentoTarToConnect::buildPhpDependsNode' => array($xml, $config),
+            'Pulsestorm_MagentoTarToConnect::buildContentsNode' => array($xml, $files)
         );
     }
     /**
@@ -457,15 +457,15 @@ place in `/path/to/magento/var/connect to load extension in Connect Manager");
      * @param  string $file
      * @return string
      */
-    static public function extract_relative_path($file)
+    static public function extractRelativePath($file)
     {
         $pattern = '/app\/etc\/|app\/code\/community\/|app\/code\/local\/|app\/design\/|lib\/|app\/locale\/|skin\/|js\//';
-        $relativePath = self::split_file_path($file, $pattern);
+        $relativePath = self::splitFilePath($file, $pattern);
         if ($file !== $relativePath) {
             return $relativePath;
         }
         $shellDir = 'shell';
-        $relativePath = self::split_file_path($file, '/' . $shellDir . '\//');
+        $relativePath = self::splitFilePath($file, '/' . $shellDir . '\//');
         return ($file !== $relativePath) ? $shellDir . DIRECTORY_SEPARATOR . $relativePath : $file;
     }
     /**
@@ -475,7 +475,7 @@ place in `/path/to/magento/var/connect to load extension in Connect Manager");
      * @param  string $pattern
      * @return string The relative path to file
      */
-    static public function split_file_path($file, $pattern)
+    static public function splitFilePath($file, $pattern)
     {
         $splitPath = preg_split($pattern, $file, -1);
         return (count($splitPath) > 1) ? $splitPath[1] : $file;
@@ -486,33 +486,33 @@ place in `/path/to/magento/var/connect to load extension in Connect Manager");
      * @param  array $files
      * @return void
      */
-    static public function build_contents_node(SimpleXMLElement $xml, array $files)
+    static public function buildContentsNode(SimpleXMLElement $xml, array $files)
     {
-        $node = self::add_child_node($xml, 'contents', '');
+        $node = self::addChildNode($xml, 'contents', '');
         $call_backs = array(
-            'target' => 'Pulsestorm_MagentoTarToConnect::extract_target', 
-            'path'   => 'Pulsestorm_MagentoTarToConnect::extract_relative_path', 
+            'target' => 'Pulsestorm_MagentoTarToConnect::extractTarget', 
+            'path'   => 'Pulsestorm_MagentoTarToConnect::extractRelativePath', 
             'type'   => 'file', 
             'include'=> '', 
             'ignore' => ''
         );
     
         $parent_nodes = array_reduce(array_keys($call_backs), function ($item, $key) use ($node) {
-            $item[$key] = self::add_child_node($node, $key, '');
+            $item[$key] = self::addChildNode($node, $key, '');
             return $item;
         });
     
         // Adding empty node, this is a workaround for the Magento connect bug. 
         // When no empty nodes are added the first file is removed from the package extension.
         foreach ($parent_nodes as $child_key => $child_node) {
-            self::add_child_node($child_node, $child_key, '');
+            self::addChildNode($child_node, $child_key, '');
         }
     
         foreach ($files as $file) {
             foreach ($parent_nodes as $key => $child_node) {
                 $call_back = $call_backs[$key];
                 $value = ($call_back === 'file') ? $call_back : (is_callable($call_back) ? call_user_func_array($call_back, array($file)) : $call_back);
-                self::add_child_node($child_node, $key, $value);
+                self::addChildNode($child_node, $key, $value);
             }
         }
     }
@@ -522,11 +522,11 @@ place in `/path/to/magento/var/connect to load extension in Connect Manager");
      * @param  array $config
      * @return void
      */
-    static public function build_php_depends_node(SimpleXMLElement $xml, array $config)
+    static public function buildPhpDependsNode(SimpleXMLElement $xml, array $config)
     {
         $data = array('depends_php_min' => 'php_min', 'depends_php_max' => 'php_max');
         foreach ($data as $key => $cfg_key) {
-            self::add_child_node($xml, $key, $config[$cfg_key]);
+            self::addChildNode($xml, $key, $config[$cfg_key]);
         }
     }
     /**
@@ -535,14 +535,14 @@ place in `/path/to/magento/var/connect to load extension in Connect Manager");
      * @param  array $config
      * @return void
      */
-    static public function build_authors_node(SimpleXMLElement $xml, array $config)
+    static public function buildAuthorsNode(SimpleXMLElement $xml, array $config)
     {
         $meta = array('name' => 'author_name', 'user' => 'author_user', 'email' => 'author_email');
-        $authors = self::add_child_node($xml, 'authors', '');
+        $authors = self::addChildNode($xml, 'authors', '');
         foreach ($meta as $key => $cfg_key) {
-            $parentNode = self::add_child_node($authors, $key, '');
+            $parentNode = self::addChildNode($authors, $key, '');
             foreach (array_filter(explode(',', $config[$cfg_key])) as $value) {
-                self::add_child_node($parentNode, $key, $value);
+                self::addChildNode($parentNode, $key, $value);
             }
         }
     }
@@ -551,12 +551,12 @@ place in `/path/to/magento/var/connect to load extension in Connect Manager");
      * @param  SimpleXMLElement $xml
      * @return void
      */
-    static public function build_version_ids_node(SimpleXMLElement $xml)
+    static public function buildVersionIdsNode(SimpleXMLElement $xml)
     {
         $key = 'version_ids';
-        $parentNode = self::add_child_node($xml, $key, '');
+        $parentNode = self::addChildNode($xml, $key, '');
         foreach (array(2, 1) as $version) {
-            self::add_child_node($parentNode, $key, $version);
+            self::addChildNode($parentNode, $key, $version);
         }
     }
     /**
@@ -566,7 +566,7 @@ place in `/path/to/magento/var/connect to load extension in Connect Manager");
      * @param  string $value
      * @return SimpleXMLElement
      */
-    static public function add_child_node(SimpleXMLElement $context, $name, $value='')
+    static public function addChildNode(SimpleXMLElement $context, $name, $value='')
     {
         $child = $context->addChild($name);
         if (trim($value)) {
