@@ -277,22 +277,32 @@ class Pulsestorm_MagentoTarToConnect
     static public function buildExtensionFromConfig($config)
     {
         ob_start();
-        $base_dir           = $config['base_dir'];          //'/Users/alanstorm/Documents/github/Pulsestorm/var/build';
-        $archive_files      = $config['archive_files'];     //'Pulsestorm_Modulelist.tar';    
-        $path_output        = $config['path_output'];       //'/Users/alanstorm/Desktop/working';    
-        $archive_connect    = $config['extension_name'] . '-' . $config['extension_version'] . '.tgz';
         
-        $temp_dir   = self::getTempDir();        
+        # extract and validate config values
+        $base_dir           = $config['base_dir'];          //'/Users/alanstorm/Documents/github/Pulsestorm/var/build';
         if($base_dir['0'] !== '/')
         {
             $base_dir = getcwd() . '/' . $base_dir;
-        }
-        chdir($temp_dir);
+        }                        
+        $archive_files      = $config['archive_files'];     //'Pulsestorm_Modulelist.tar';    
+        $path_output        = $config['path_output'];       //'/Users/alanstorm/Desktop/working';    
+        $archive_connect    = $config['extension_name'] . '-' . $config['extension_version'] . '.tgz';
+        ###--------------------------------------------------
+        
+        # make sure the archive we're creating exists
         if(!file_exists($base_dir . '/' . $archive_files))
         {
             self::error('Can\'t find specified archive, bailing' . "\n[" . $base_dir . '/' . $archive_files.']');
             exit;
         }
+        ###--------------------------------------------------
+        
+        # create a temporary directory, move to temporary
+        $temp_dir   = self::getTempDir();        
+        chdir($temp_dir);
+        ###--------------------------------------------------
+        
+        # copy and extract archive               
         shell_exec('cp '        . $base_dir . '/' . $archive_files . ' ' . $temp_dir);
         if(preg_match('/\.zip$/', $archive_files)) {
             shell_exec('unzip -o '  . $temp_dir . '/' . $archive_files);
@@ -300,54 +310,74 @@ class Pulsestorm_MagentoTarToConnect
             shell_exec('tar -xvf '  . $temp_dir . '/' . $archive_files);
         }
         shell_exec('rm '        . $temp_dir . '/' . $archive_files);
+        ###--------------------------------------------------
         
+        # get a lsit of all the files without directories
         $all        = self::globRecursive($temp_dir  . '/*');
         $dirs       = self::globRecursive($temp_dir .'/*',GLOB_ONLYDIR);
         $files      = array_diff($all, $dirs);
-    
+        ###--------------------------------------------------
+        
+        # now that we've extracted the files, yoink the version number from the config
+        # this only works is auto_detect_version is true. Also, may not return what
+        # you expect if your connect extension includes multiple Magento modules
         if(isset($config['auto_detect_version']) && $config['auto_detect_version'] == true)
         {
             $config['extension_version'] = self::getModuleVersion($files);
             $archive_connect = $config['extension_name'] . '-' . $config['extension_version'] . '.tgz';
         }
+        ###--------------------------------------------------
         
+        # checks that your Magento Connect extension version matches the version of your 
+        # modules file.  Probably redundant if auto_detect_version is true
         if(!$config['skip_version_compare'])
         {
             self::checkModuleVersionVsPackageVersion($files, $config['extension_version']);
         }
-            
-        $xml        = self::createPackageXml($files,$temp_dir,$config);
+        ###--------------------------------------------------
         
+        # creates the base extension package.xml file            
+        $xml        = self::createPackageXml($files,$temp_dir,$config);        
         file_put_contents($temp_dir . '/package.xml',$xml);    
         self::output($temp_dir);
+        ###--------------------------------------------------
         
+        # create the base output folder if it doesn't exist
         if(!is_dir($path_output))
         {
             mkdir($path_output, 0777, true);
         }
+        ###--------------------------------------------------
         
+        # use Magento architve to tar up the files
         $archiver = new Mage_Archive_Tar;
         $archiver->pack($temp_dir,$path_output.'/'.$archive_files,true);
+        ###--------------------------------------------------
         
+        # zip up the archive
         shell_exec('gzip '  . $path_output . '/' . $archive_files);
         shell_exec('mv '    . $path_output . '/' . $archive_files.'.gz '.$path_output.'/' . $archive_connect);
-        // Creating extension xml for connect using the extension name
+        ###--------------------------------------------------
         
-        //self::output("Skipping self::createExtensionXml because I don't know how it works and need to get " . 
-        //"test framework working.");
-        self::createExtensionXml($files, $config, $temp_dir, $path_output);
+        # Creating extension xml for connect using the extension name
+        self::createExtensionXml($files, $config, $temp_dir, $path_output);        
+        ###--------------------------------------------------
+        
+        # Report on what we did
         self::output('');
         self::output('Build Complete');
         self::output('--------------------------------------------------');
         self::output( "Built tgz in $path_output\n");
         
         self::output( 
-    "Built XML for Connect Manager in
+        "Built XML for Connect Manager in" . "\n\n" .
     
-    $path_output/var/connect 
+        "   $path_output/var/connect " . "\n\n" .
     
-place in `/path/to/magento/var/connect to load extension in Connect Manager");    
-    
+        "place in `/path/to/magento/var/connect to load extension in Connect Manager");    
+        
+        ###--------------------------------------------------
+        
         return ob_get_clean();
     }
     
