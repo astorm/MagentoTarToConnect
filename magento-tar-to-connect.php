@@ -88,11 +88,21 @@ function create_package_xml($files, $base_dir, $config)
     $xml->notes         = $config['notes'];
     
     $authors            = $xml->addChild('authors');
-    $author             = $authors->addChild('author');
-    $author->name       = $config['author_name'];
-    $author->user       = $config['author_user'];
-    $author->email      = $config['author_email'];
-    
+    $authorList[0]      = array(
+        'author_name'   => $config['author_name'],
+        'author_user'   => $config['author_user'],
+        'author_email'  => $config['author_email'],
+    );
+    if (array_key_exists('additional_authors', $config)) {
+        $authorList = array_merge($authorList, $config['additional_authors']);
+    }
+    foreach ($authorList as $oneAuthor) {
+        $author         = $authors->addChild('author');
+        $author->name   = $oneAuthor['author_name'];
+        $author->user   = $oneAuthor['author_user'];
+        $author->email  = $oneAuthor['author_email'];
+    }
+
     $xml->date          = date('Y-m-d');
     $xml->time          = date('G:i:s');
     $xml->compatible    = '';

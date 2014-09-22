@@ -45,6 +45,20 @@ return array(
 'author_user'            => 'alanstorm',
 'author_email'           => 'foo@example.com',
 
+// Optional: adds additional author nodes to package.xml
+'additional_authors'     => array(
+  array(
+    'author_name'        => 'Mike West',
+    'author_user'        => 'micwest',
+    'author_email'       => 'foo2@example.com',
+  ),
+  array(
+    'author_name'        => 'Reggie Gabriel',
+    'author_user'        => 'rgabriel',
+    'author_email'       => 'foo3@example.com',
+  ),
+),
+
 //PHP min/max fields for Connect.  I don't know if anyone uses these, but you should
 //probably check that they're accurate
 'php_min'                => '5.2.0',
