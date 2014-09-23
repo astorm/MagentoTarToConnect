@@ -103,10 +103,12 @@ class Pulsestorm_MagentoTarToConnect
         $xml->notes         = $config['notes'];
         
         $authors            = $xml->addChild('authors');
-        $author             = $authors->addChild('author');
-        $author->name       = $config['author_name'];
-        $author->user       = $config['author_user'];
-        $author->email      = $config['author_email'];
+        foreach (self::getAuthorData($config) as $oneAuthor) {
+            $author         = $authors->addChild('author');
+            $author->name   = $oneAuthor['author_name'];
+            $author->user   = $oneAuthor['author_user'];
+            $author->email  = $oneAuthor['author_email'];
+        }
         
         $xml->date          = date('Y-m-d');
         $xml->time          = date('G:i:s');
@@ -528,7 +530,7 @@ class Pulsestorm_MagentoTarToConnect
         );
     
         $parent_nodes = array_reduce(array_keys($call_backs), function ($item, $key) use ($node) {
-            $item[$key] = self::addChildNode($node, $key, '');
+            $item[$key] = Pulsestorm_MagentoTarToConnect::addChildNode($node, $key, '');
             return $item;
         });
     
@@ -560,6 +562,33 @@ class Pulsestorm_MagentoTarToConnect
         }
     }
     /**
+     * Get author data, which is a combination of author data and additional authors data from the configuration.
+     * @param  array $config
+     * @return array
+     */
+    static public function getAuthorData(array $config)
+    {
+         $authorList[0]      = array(
+            'author_name'   => $config['author_name'],
+            'author_user'   => $config['author_user'],
+            'author_email'  => $config['author_email'],
+        );
+        if (array_key_exists('additional_authors', $config)) {
+            $authorList = array_merge($authorList, $config['additional_authors']);
+        }
+        return $authorList;
+    }
+    /**
+     * Get a specific author information by key.
+     * @param  array $authorList
+     * @param  string $key
+     * @return array
+     */
+    static public function getAuthorInfoByKey(array $authorList, $key)
+    {
+        return array_map(function($author) use ($key) { return $author[$key]; }, $authorList);
+    }
+    /**
      * Build 'authors' node including all its child nodes.
      * @param  SimpleXMLElement $xml
      * @param  array $config
@@ -568,10 +597,11 @@ class Pulsestorm_MagentoTarToConnect
     static public function buildAuthorsNode(SimpleXMLElement $xml, array $config)
     {
         $meta = array('name' => 'author_name', 'user' => 'author_user', 'email' => 'author_email');
+        $authorList = self::getAuthorData($config);
         $authors = self::addChildNode($xml, 'authors', '');
         foreach ($meta as $key => $cfg_key) {
             $parentNode = self::addChildNode($authors, $key, '');
-            foreach (array_filter(explode(',', $config[$cfg_key])) as $value) {
+            foreach (self::getAuthorInfoByKey($authorList, $cfg_key) as $value) {
                 self::addChildNode($parentNode, $key, $value);
             }
         }
