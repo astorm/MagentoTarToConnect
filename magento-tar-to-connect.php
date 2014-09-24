@@ -21,7 +21,8 @@ require_once dirname(__FILE__) . '/'. 'src/magento/downloader/lib/Mage/Exception
 
 /**
 * Still a lot of Magento users stuck on systems with 5.2, no no namespaces
-* Le sigh
+* @todo but we're using anonymous functions below, so this won't work with
+*       5.2 -- do we want this as a class, or a single file namespaced module?
 */
 class Pulsestorm_MagentoTarToConnect
 {

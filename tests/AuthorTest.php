@@ -12,15 +12,20 @@ class AuthorTest extends MagentoTarToConnectBaseTest
     public function testExample()
     {
         $results        = $this->_buildExtensionFromFixture('Pulsestorm_Better404.tar');     
-        // $xml_gui        = simplexml_load_file($results['connect_xml']);
+        $xml_gui        = simplexml_load_file($results['connect_xml']);
         $xml_package    = simplexml_load_file($results['extracted'] . '/package.xml');
 
-        $names = array();
+        $names_package = array();
         foreach($xml_package->authors->children() as $author)
         {            
-            $names[] = $author->name;
+            $names_package[] = (string) $author->name;
         }
-        
-        $this->assertTrue(in_array('Alan Storm', $names));
+
+        foreach($xml_gui->authors->name->children() as $author)
+        {            
+            $names_gui[] = (string) $author;
+        }
+
+        $this->assertEquals($names_package, $names_gui);
     }
 }
