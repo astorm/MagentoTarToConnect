@@ -306,13 +306,13 @@ class Pulsestorm_MagentoTarToConnect
         ###--------------------------------------------------
         
         # copy and extract archive               
-        shell_exec('cp '        . $base_dir . '/' . $archive_files . ' ' . $temp_dir);
-        if(preg_match('/\.zip$/', $archive_files)) {
-            shell_exec('unzip -o '  . $temp_dir . '/' . $archive_files);
+        shell_exec("cp '" . $base_dir . "/" . $archive_files . "' " . $temp_dir);
+        if (preg_match('/\.zip$/', $archive_files)) {
+            shell_exec("unzip -o '" . $temp_dir . "/" . $archive_files . "'");
         } else {
-            shell_exec('tar -xvf '  . $temp_dir . '/' . $archive_files);
+            shell_exec("tar -xvf '" . $temp_dir . "/" . $archive_files . "'");
         }
-        shell_exec('rm '        . $temp_dir . '/' . $archive_files);
+        shell_exec("rm '" . $temp_dir . "/" . $archive_files . "'");
         ###--------------------------------------------------
         
         # get a lsit of all the files without directories
@@ -358,8 +358,8 @@ class Pulsestorm_MagentoTarToConnect
         ###--------------------------------------------------
         
         # zip up the archive
-        shell_exec('gzip '  . $path_output . '/' . $archive_files);
-        shell_exec('mv '    . $path_output . '/' . $archive_files.'.gz '.$path_output.'/' . $archive_connect);
+        shell_exec("gzip '" . $path_output . "/" . $archive_files . "'");
+        shell_exec("mv '" . $path_output . "/" . $archive_files . ".gz' '" . $path_output . "/" . $archive_connect . "'");
         ###--------------------------------------------------
         
         # Creating extension xml for connect using the extension name
@@ -440,7 +440,7 @@ class Pulsestorm_MagentoTarToConnect
         $extensionFileName = $extensionPath . $config['extension_name'] . '.xml';
         file_put_contents($extensionFileName, self::buildExtensionXml($files, $config));
         
-        shell_exec('cp -Rf '    . $tempDir . DIRECTORY_SEPARATOR . 'var '. $path_output);
+        shell_exec("cp -Rf '" . $tempDir . DIRECTORY_SEPARATOR . "var " . $path_output . "'");
     }
     static public function buildExtensionXml($files, $config)
     {
