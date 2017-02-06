@@ -440,7 +440,7 @@ class Pulsestorm_MagentoTarToConnect
         $extensionFileName = $extensionPath . $config['extension_name'] . '.xml';
         file_put_contents($extensionFileName, self::buildExtensionXml($files, $config));
         
-        shell_exec("cp -Rf '" . $tempDir . DIRECTORY_SEPARATOR . "var " . $path_output . "'");
+        shell_exec("cp -Rf '" . $tempDir . DIRECTORY_SEPARATOR . "var' '" . $path_output . "'");
     }
     static public function buildExtensionXml($files, $config)
     {
