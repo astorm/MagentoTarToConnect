@@ -1,3 +1,4 @@
+#!/usr/bin/php
 <?php
 // Copyright (c) 2012 - 2014 Pulse Storm LLC.
 // 
